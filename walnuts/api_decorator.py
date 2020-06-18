@@ -1,9 +1,10 @@
 import inspect
-import json
 from functools import wraps, partial
 from urllib.parse import urljoin
 
 from requests import Session
+
+from walnuts.utils import format_json
 
 
 class Method:
@@ -115,19 +116,3 @@ def add_headers(self, headers):
     if not session:
         raise ValueError('add_headers需要配合group装饰器使用')
     session.headers.update(headers)
-
-
-def format_json(content):
-    """
-    格式化JSON
-    """
-    if isinstance(content, (str, bytes)):
-        try:
-            content = json.loads(content)
-        except:
-            return content
-
-    result = json.dumps(content, sort_keys=True, indent=4, separators=(',', ': ')). \
-        encode('latin-1').decode('unicode_escape')
-
-    return result
