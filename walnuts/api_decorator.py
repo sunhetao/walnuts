@@ -25,7 +25,10 @@ def group(cls=None, path=''):
         if not isinstance(cls, type):
             raise ValueError('group装饰器只能作用于类')
         obj = cls(*args, **kwargs)
-        obj.path = path.format(**wrapped_v)
+        try:
+            obj.path = path.format(**wrapped_v)
+        except KeyError as e:
+            raise ValueError('%s格式化时发生错误,找不到%s配置,请检查' % (path, e))
         obj.session = Session()
         return obj
 

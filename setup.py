@@ -14,5 +14,5 @@ setup(
     packages=['walnuts'],
     include_package_data=True,
     platforms="any",
-    install_requires=['requests'],
+    install_requires=['requests', 'configobj', 'pyyaml'],
 )

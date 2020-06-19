@@ -2,7 +2,9 @@ import json
 import os
 import traceback
 from collections import UserDict
+from functools import partial
 
+from configobj import ConfigObj
 from yaml import load, dump
 from yaml import Loader, Dumper
 
@@ -20,13 +22,15 @@ def format_json(content):
     return result
 
 
-def get_root_dir(cur_dir):
-    if '.walnuts' in os.listdir(cur_dir):
-        return cur_dir
+def get_root_dir_and_env(flag_file_name, cur_dir):
+    if flag_file_name in os.listdir(cur_dir):
+        with open(os.path.join(cur_dir, flag_file_name)) as f:
+            return cur_dir, f.read().strip()
+
     up_dir = os.path.dirname(cur_dir)
     if up_dir == cur_dir:
         return None
-    return get_root_dir(up_dir)
+    return get_root_dir_and_env(flag_file_name, up_dir)
 
 
 class WDict(UserDict):
@@ -34,7 +38,7 @@ class WDict(UserDict):
     It's hard to name！！！
     注意：正常使用key中不能再出现 "."，否则会被拆分掉，如a['a.b.c']等于a['a']['b']['c']
     示例：> d = {'a': {'b': 'c': 1}}
-         > print(WDict(**d)['a.b.c']) # 1
+         > print(WDict(**d)['a.b.c']) # -> 1
     """
 
     def __getitem__(self, item: str):
@@ -69,24 +73,35 @@ class DDict:
         return str(self.__d)
 
 
-class YamlWrapper:
-    def __init__(self, file_path):
+class FileParser:
+    def __init__(self, suffix, file_path):
         if not isinstance(file_path, str):
             raise ValueError('file_path error, is not a valid str')
 
         if not os.path.isfile(file_path):
             raise ValueError('file_path error, is not a valid file path')
 
-        self.__file_path = file_path
+        self.file_path = file_path
         self.content = None
+        self.parser = self.get_parser(suffix)
+
         try:
-            with open(self.__file_path) as f:
-                self.content = load(f, Loader)
+            with open(self.file_path, encoding='utf-8') as f:
+                self.content = self.parser(f) or {}
         except Exception:
             traceback.print_exc()
-            raise ValueError('%s is not a valid yaml file' % file_path)
+            raise ValueError('%s is not a valid %s file' % (file_path, suffix))
 
-        self.content = WDict(**self.content)
+    @staticmethod
+    def get_parser(suffix):
+        if suffix == 'yaml':
+            return partial(load, Loader=Loader)
+        elif suffix == 'json':
+            return json.load
+        elif suffix == 'ini':
+            return ConfigObj
+        else:
+            raise ValueError('不支持的配置文件类型')
 
-    def __getitem__(self, item):
-        return self.content[item]
+    def as_dict(self):
+        return self.content
