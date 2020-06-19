@@ -1,5 +1,10 @@
 import json
 import os
+import traceback
+from collections import UserDict
+
+from yaml import load, dump
+from yaml import Loader, Dumper
 
 
 def format_json(content):
@@ -22,3 +27,43 @@ def get_root_dir(cur_dir):
     if up_dir == cur_dir:
         return None
     return get_root_dir(up_dir)
+
+
+class WDict(UserDict):
+    """
+    注意：正常使用key中不能再出现 "."，否则会被拆分掉，如a['a.b.c']等于a['a']['b']['c']
+    """
+
+    def __getitem__(self, item: str):
+        key_list = item.split('.')
+        content = self.data
+        for key in key_list:
+            key = int(key) if str.isdigit(key) else key
+            try:
+                content = content[key]
+            except (KeyError, IndexError):
+                return None
+        return content
+
+
+class YamlWrapper:
+    def __init__(self, file_path):
+        if not isinstance(file_path, str):
+            raise ValueError('file_path error, is not a valid str')
+
+        if not os.path.isfile(file_path):
+            raise ValueError('file_path error, is not a valid file path')
+
+        self.__file_path = file_path
+        self.content = None
+        try:
+            with open(self.__file_path) as f:
+                self.content = load(f, Loader)
+        except Exception:
+            traceback.print_exc()
+            raise ValueError('%s is not a valid yaml file' % file_path)
+
+        self.content = WDict(**self.content)
+
+    def __getitem__(self, item):
+        return self.content[item]

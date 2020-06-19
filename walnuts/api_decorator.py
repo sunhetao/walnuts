@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 from requests import Session
 
 from walnuts.utils import format_json
+from walnuts import v
 
 
 class Method:
