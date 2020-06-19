@@ -1,11 +1,12 @@
 import inspect
+from copy import deepcopy
 from functools import wraps, partial
 from urllib.parse import urljoin
 
 from requests import Session
 
+from walnuts.config_manager import wrapped_v
 from walnuts.utils import format_json
-from walnuts import v
 
 
 class Method:
@@ -24,7 +25,7 @@ def group(cls=None, path=''):
         if not isinstance(cls, type):
             raise ValueError('group装饰器只能作用于类')
         obj = cls(*args, **kwargs)
-        obj.path = path
+        obj.path = path.format(**wrapped_v)
         obj.session = Session()
         return obj
 

@@ -1,6 +1,8 @@
 import os
 import sys
-from .utils import get_root_dir, YamlWrapper, format_json
+from copy import deepcopy
+
+from .utils import get_root_dir, YamlWrapper, format_json, DDict
 
 PROJECT_DIR = get_root_dir(sys.path[0])
 CONFIG_FILE_NAME = 'config'
@@ -46,3 +48,6 @@ class ConfigManager:
 
 
 v = ConfigManager(PROJECT_DIR)
+wrapped_v = deepcopy(v.config)
+for i in wrapped_v:
+    wrapped_v[i] = DDict(wrapped_v[i])

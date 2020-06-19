@@ -31,7 +31,10 @@ def get_root_dir(cur_dir):
 
 class WDict(UserDict):
     """
+    It's hard to name！！！
     注意：正常使用key中不能再出现 "."，否则会被拆分掉，如a['a.b.c']等于a['a']['b']['c']
+    示例：> d = {'a': {'b': 'c': 1}}
+         > print(WDict(**d)['a.b.c']) # 1
     """
 
     def __getitem__(self, item: str):
@@ -44,6 +47,26 @@ class WDict(UserDict):
             except (KeyError, IndexError):
                 return None
         return content
+
+
+class DDict:
+    """
+    It's hard to name！！！
+    示例: > d = {'a': {'b': 'c': 1}}
+         > print(d.a.b.c) # 1
+    """
+
+    def __init__(self, d):
+        self.__d = d
+
+    def __getattr__(self, item):
+        try:
+            return DDict(self.__d[item])
+        except TypeError:
+            raise ValueError('找不到%s配置，请检查' % item)
+
+    def __str__(self):
+        return str(self.__d)
 
 
 class YamlWrapper:
