@@ -29,7 +29,7 @@ def get_root_dir_and_env(flag_file_name, cur_dir):
 
     up_dir = os.path.dirname(cur_dir)
     if up_dir == cur_dir:
-        return None
+        return None, None
     return get_root_dir_and_env(flag_file_name, up_dir)
 
 
@@ -73,7 +73,7 @@ class DDict:
         return str(self.__d)
 
 
-class FileParser:
+class ConfigFileParser:
     def __init__(self, suffix, file_path):
         if not isinstance(file_path, str):
             raise ValueError('file_path error, is not a valid str')

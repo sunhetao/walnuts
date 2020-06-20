@@ -2,7 +2,7 @@ import os
 import sys
 from copy import deepcopy
 
-from .utils import get_root_dir_and_env, format_json, DDict, WDict, FileParser
+from .utils import get_root_dir_and_env, format_json, DDict, WDict, ConfigFileParser
 
 # 项目根目录标志文件名
 PROJECT_DIR_FLAG_FILE_NAME = '.walnuts'
@@ -50,7 +50,7 @@ class ConfigManager:
         if not env:
             return {}
         file_path = self.get_file_path(suffix, env)
-        return FileParser(suffix, file_path).as_dict() if file_path else {}
+        return ConfigFileParser(suffix, file_path).as_dict() if file_path else {}
 
     def get_finally_config(self):
         """

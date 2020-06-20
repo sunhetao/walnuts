@@ -1,3 +1,5 @@
 requests
 pyyaml
 configobj
+click
+jinja2
