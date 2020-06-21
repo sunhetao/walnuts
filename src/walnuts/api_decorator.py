@@ -1,12 +1,11 @@
 import inspect
-from copy import deepcopy
-from functools import wraps, partial
+from functools import wraps
 from urllib.parse import urljoin
 
 from requests import Session
 
-from walnuts.config_manager import wrapped_v
-from walnuts.utils import format_json
+from .config_manager import wrapped_v
+from .utils import format_json
 
 
 class Method:
@@ -16,46 +15,58 @@ class Method:
     DELETE = 'DELETE'
 
 
-def group(cls=None, path=''):
-    if cls is None:
-        return partial(group, path=path)
-
-    @wraps(cls)
-    def wrapper(*args, **kwargs):
-        if not isinstance(cls, type):
-            raise ValueError('group装饰器只能作用于类')
-        obj = cls(*args, **kwargs)
-        try:
-            obj.path = path.format(**wrapped_v)
-        except KeyError as e:
-            raise ValueError('%s格式化时发生错误,找不到%s配置,请检查' % (path, e))
-        obj.session = Session()
-        return obj
-
-    return wrapper
-
-
 def request_mapping(path='', method=Method.GET):
-    def decorate(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
+    def decorate(cls_or_func):
+        @wraps(cls_or_func)
+        def wrapper_cls(*args, **kwargs):
+            cls = cls_or_func
+            obj = cls(*args, **kwargs)
+            try:
+                obj.path = path.format(**wrapped_v)
+            except KeyError as e:
+                raise ValueError('%s格式化时发生错误,找不到%s配置,请检查' % (path, e))
+            obj.session = Session()
+            return obj
+
+        @wraps(cls_or_func)
+        def wrapper_func(*args, **kwargs):
+            func = cls_or_func
             requester = func(*args, **kwargs) or Requester()
             func_args = inspect.getfullargspec(func).args
             if len(func_args) > 0 and func_args[0] == 'self':
                 self = args[0]
                 requester.base_path = getattr(self, 'path', '')
                 requester.session = getattr(self, 'session', Session())
-            else:
-                requester.base_path = ''
-                requester.session = Session()
             requester.func = func
             requester.path = path
             requester.method = method
+            requester.do()
             return requester
 
-        return wrapper
+        if isinstance(cls_or_func, type):
+            return wrapper_cls
+        else:
+            return wrapper_func
 
     return decorate
+
+
+def add_header(self, key, value):
+    session = getattr(self, 'session', None)
+    if not session:
+        raise ValueError('add_header需在api类上添加RequestMapping装饰器后可使用')
+    session.headers[key] = value
+
+
+def add_headers(self, headers):
+    session = getattr(self, 'session', None)
+    if not session:
+        raise ValueError('add_headers需在api类上添加RequestMapping装饰器后可使用')
+    session.headers.update(headers)
+
+
+def get_session(self) -> Session:
+    return getattr(self, 'session', None)
 
 
 class Requester:
@@ -89,35 +100,17 @@ class Requester:
         print('4、请求body:\n%s\n' % format_json(self.res.request.body))
         print('5、响应结果:\n%s\n' % format_json(self.res.content))
 
-    def __request(self):
+    def do(self):
         self.__prepare_request()
-        self.res = self.session.request(self.method, self.url, **self.kwargs)
+        self.res = (self.session or Session()).request(self.method, self.url, **self.kwargs)
         self.__log()
 
     def __getattr__(self, item):
-        if not self.res:
-            self.__request()
         return getattr(self.res, item)
 
     @property
     def content(self):
-        self.__request()
         return self.res.content
 
     def json(self):
-        self.__request()
         return self.res.json()
-
-
-def add_header(self, key, value):
-    session = getattr(self, 'session', None)
-    if not session:
-        raise ValueError('add_header需要配合group装饰器使用')
-    session.headers[key] = value
-
-
-def add_headers(self, headers):
-    session = getattr(self, 'session', None)
-    if not session:
-        raise ValueError('add_headers需要配合group装饰器使用')
-    session.headers.update(headers)

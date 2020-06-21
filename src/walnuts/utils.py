@@ -23,6 +23,8 @@ def format_json(content):
 
 
 def get_root_dir_and_env(flag_file_name, cur_dir):
+    if os.path.isfile(cur_dir):
+        cur_dir = os.path.dirname(cur_dir)
     if flag_file_name in os.listdir(cur_dir):
         with open(os.path.join(cur_dir, flag_file_name)) as f:
             return cur_dir, f.read().strip()

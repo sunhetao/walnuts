@@ -22,7 +22,7 @@ pip install -U walnuts
 
 # 一个简单的示例
 ```python
-from walnuts import group, request_mapping, add_header, Method, Requester
+from src.walnuts import group, request_mapping, add_header, Method, Requester
 
 
 @group(path='http://httpbin.org')

@@ -11,12 +11,13 @@ setup(
     url="https://github.com/sunhetao/walnuts",
     author="sunhetao",
     author_email="s13183036086@gmail.com",
-    packages=find_packages(),
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
     include_package_data=True,
     platforms="any",
     install_requires=['requests', 'configobj', 'pyyaml', 'click'],
     entry_points='''
     [console_scripts]
-    walnuts-cli=walnuts.cli:walnuts_cli
+    walnuts=walnuts.cli:walnuts_cli
     '''
 )
