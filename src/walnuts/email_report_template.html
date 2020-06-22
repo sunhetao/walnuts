@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">
+<!--<table style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--    <tr>-->
+<!--        <td align="right" style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--            <j:choose>-->
+<!--                <j:when test="${build.result=='SUCCESS'}">-->
+<!--                    <img src="${rooturl}static/e59dfe28/images/32x32/blue.gif">-->
+<!--                    </img>-->
+<!--                </j:when>-->
+<!--                <j:when test="${build.result=='FAILURE'}">-->
+<!--                    <img src="${rooturl}static/e59dfe28/images/32x32/red.gif">-->
+<!--                    </img>-->
+<!--                </j:when>-->
+<!--                <j:otherwise>-->
+<!--                    <img src="${rooturl}static/e59dfe28/images/32x32/yellow.gif">-->
+<!--                    </img>-->
+<!--                </j:otherwise>-->
+<!--            </j:choose>-->
+<!--        </td>-->
+<!--        <td valign="center" style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--            <b style="font-size: 200%;">-->
+<!--                TESTRUN ${build.result}-->
+<!--            </b>-->
+<!--        </td>-->
+<!--    </tr>-->
+<!--    <tr>-->
+<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--            Project:-->
+<!--        </td>-->
+<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--            ${project.name}-->
+<!--        </td>-->
+<!--    </tr>-->
+<!--    <tr>-->
+<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--            Date of run:-->
+<!--        </td>-->
+<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--            ${it.timestampString}-->
+<!--        </td>-->
+<!--    </tr>-->
+<!--    <tr>-->
+<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--            Test duration:-->
+<!--        </td>-->
+<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--            ${build.durationString}-->
+<!--        </td>-->
+<!--    </tr>-->
+<!--    <tr>-->
+<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--            Test report:-->
+<!--        </td>-->
+<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--            <a href="http://172.16.10.203:8080/jenkins/job/${project.name}/${build.number}/allure/">-->
+<!--                TestReport-->
+<!--            </a>-->
+<!--        </td>-->
+<!--    </tr>-->
+<!--    <tr>-->
+<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--            Console logs:-->
+<!--        </td>-->
+<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--            <a href="${rooturl}${build.url}console">-->
+<!--                ${rooturl}${build.url}console-->
+<!--            </a>-->
+<!--        </td>-->
+<!--    </tr>-->
+<!--</table>-->
+<br/>
+
+<!--<div style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
+<!--    <j:set var="healthIconSize" value="16x16"/>-->
+<!--    <j:set var="healthReports" value="${project.buildHealthReports}"/>-->
+<!--    <j:if test="${healthReports!=null}">-->
+<!--        <b style="font-size: 160%;">Health Report</b>-->
+<!--        <br/>-->
+<!--        <table>-->
+<!--            <tr>-->
+<!--                <th>W</th>-->
+<!--                <th>Description</th>-->
+<!--                <th>Score</th>-->
+<!--            </tr>-->
+<!--            <j:forEach var="healthReport" items="${healthReports}">-->
+<!--                <tr>-->
+<!--                    <td>-->
+<!--                        <img src="${rooturl}${healthReport.getIconUrl(healthIconSize)}"/>-->
+<!--                    </td>-->
+<!--                    <td>${healthReport.description}</td>-->
+<!--                    <td>${healthReport.score}</td>-->
+<!--                </tr>-->
+<!--            </j:forEach>-->
+<!--        </table>-->
+<!--        <br/>-->
+<!--    </j:if>-->
+<!--</div>-->
+
+
+<div style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">
+    <b style="font-size: 160%;">Summary Report</b>
+    <br/>
+    <br/>
+    <table style="border: 1px solid black; border-collapse:collapse;">
+        <tr>
+            <th style="border: 1px solid black; border-collapse:collapse;">Package</th>
+            <th style="border: 1px solid black; border-collapse:collapse;">Failed</th>
+            <th style="border: 1px solid black; border-collapse:collapse;">Passed</th>
+            <th style="border: 1px solid black; border-collapse:collapse;">Skipped</th>
+            <th style="border: 1px solid black; border-collapse:collapse;">Total</th>
+        </tr>
+        {% for package_name, test_package in test_packages.items() %}
+        <tr>
+            <td style="border: 1px solid black; border-collapse:collapse;">
+                <tt>{{ package_name }}</tt>
+            </td>
+            <td style="border: 1px solid black;border-collapse:collapse; color:red;">
+                {{ test_package['failed'] }}
+            </td>
+            <td style="border: 1px solid black;border-collapse:collapse; color:blue;">
+                {{ test_package['success'] }}
+            </td>
+            <td style="border: 1px solid black;border-collapse:collapse; color:grey;">
+                {{ test_package['skipped'] }}
+            </td>
+            <td style="border: 1px solid black;border-collapse:collapse;">
+                <b>{{ test_package['failed'] + test_package['success'] + test_package['skipped'] }}</b>
+            </td>
+        </tr>
+        {% for test_case in test_package['test_cases'] %}
+        {%- if test_case['failed']>0 -%}
+        <tr>
+            <td style="color:red;" colspan="5">
+                <tt>{{ test_case['case'] }}</tt>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        {% for test_case in test_package['test_cases'] %}
+        {%- if test_case['failed']==0 -%}
+        <tr>
+            <td style="color:green;" colspan="5">
+                <tt>{{ test_case['case'] }}</tt>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+    </table>
+    <br/>
+    <div>注意：报告详情请参见附件</div>
+    <br/>
+</div>
+</body>
+</html>

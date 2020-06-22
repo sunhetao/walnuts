@@ -1,10 +1,10 @@
-from walnuts import request_mapping, Method, Requester
+from walnuts import RequestMapping, Method, Requester
 
 
-@request_mapping(path='{app.host}')
+@RequestMapping(path='{app.host}')
 class Demo:
 
-    @request_mapping(path='/login', method=Method.POST)
+    @RequestMapping(path='/login', method=Method.POST)
     def login(self, email, password):
         """
         登录接口
@@ -15,6 +15,6 @@ class Demo:
         }
         return Requester(data=data)
 
-    @request_mapping(path='/book/list')
+    @RequestMapping(path='/book/list')
     def get_book_list(self):
         return Requester()

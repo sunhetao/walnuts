@@ -1,5 +1,28 @@
 ## 一、目录说明
-
+```
+├── README.md               # 帮助文档
+├── .gitignore              # 配置忽略不想被GIT管理的文件
+├── .walnuts                # 项目根目录标识
+├── app_for_test.py         # 演示使用的web服务文件
+├── config.yaml             # 配置文件
+├── requirements.txt        # 项目依赖文件
+├── api                     # api定义包
+│   ├── __init__.py
+│   ├── demo.py
+│   └── ...
+├── common                  # 通用工具包
+│   ├── __init__.py
+│   ├── assert_tools.py
+│   └── ...
+├── db                      # db包
+│   ├── __init__.py
+│   └── ...
+└── test_suites             # 测试用例包
+    ├── __init__.py
+    ├── test_book_list.py
+    ├── test_login.py
+    └── ...
+```
 ## 二、环境安装
 ```shell script
 pip install -r requirements.txt
@@ -48,7 +71,7 @@ user:
 则可通过如下代码获取配置
 
 ```python
-from src.walnuts import v
+from walnuts import v
 
 email = v['user.email'] # 通过[]取值
 password = v('user.password') # 通过()取值

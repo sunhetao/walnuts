@@ -10,6 +10,9 @@ PROJECT_DIR_FLAG_FILE_NAME = '.walnuts'
 # 项目根路径和环境配置
 PROJECT_DIR, ENV = get_root_dir_and_env(PROJECT_DIR_FLAG_FILE_NAME, sys.path[0])
 
+if not PROJECT_DIR:
+    raise ValueError('找不到项目根目录，请在项目根目录下新建".walnuts"文件')
+
 # 默认使用环境变量里的配置
 ENV = os.getenv('env', None) or ENV
 

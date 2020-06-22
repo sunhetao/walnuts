@@ -5,6 +5,8 @@ import sys
 import click
 from click import echo, style
 
+from .execute import run_test
+
 TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 
 
@@ -74,6 +76,18 @@ def init(ctx, project_name):
         $ pithy-cli init         # 生成接口测试项目
     """
     generate_project(project_name)
+
+
+@walnuts_cli.command()
+@click.pass_context
+def run(ctx, project_name):
+    """
+    运行测试
+
+    使用方法:
+        $ pithy-cli run
+    """
+    run_test()
 
 
 if __name__ == '__main__':

@@ -15,7 +15,7 @@ setup(
     package_dir={'': 'src'},
     include_package_data=True,
     platforms="any",
-    install_requires=['requests', 'configobj', 'pyyaml', 'click'],
+    install_requires=['requests', 'configobj', 'pyyaml', 'click', 'jinja2'],
     entry_points='''
     [console_scripts]
     walnuts=walnuts.cli:walnuts_cli
