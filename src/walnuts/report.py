@@ -94,6 +94,6 @@ def parse_test_result_xml(file_path):
 def gen_junit_report(junit_xml_path):
     email_report_template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'email_report_template.html')
     test_result = parse_test_result_xml(junit_xml_path)
-    with open(email_report_template_path) as f:
+    with open(email_report_template_path, encoding='utf-8') as f:
         content = Template(f.read()).render(**test_result)
     return content

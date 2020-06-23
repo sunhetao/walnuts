@@ -52,7 +52,13 @@ python app_for_test.py
 
 在出现的界面中找到``Testing``，然后在``Default test runner``选项选择``pytest``，配置完成后，再打开测试用例文件(test_suites/test_login)，查看测试用例(类的方法)，左侧有绿色的按钮，点击即可运行
 
-### 3、配置文件说明
+### 3、运行项目用例
+在项目根目录下执行如下命令
+```shell script
+walnuts run
+```
+
+### 4、配置文件说明
 配置文件名约定为``config``，可以使用``ini``、``json``、``yaml``，优先级为：``yaml > json > ini``
 
 如果是多环境的话，可以在后面加上环境名，如``config-test.yaml``，需要有``.walnuts``中写入test标识，测试环境的配置大于默认配置，如有同名参数，测试环境配置会覆盖默认环境配置
@@ -78,4 +84,3 @@ email = v['user.email'] # 通过[]取值
 password = v('user.password') # 通过()取值
 
 ```
-

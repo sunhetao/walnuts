@@ -1,4 +1,5 @@
 import os
+import smtplib
 import time
 
 from click import echo, style
@@ -34,7 +35,7 @@ class ReportConfig:
 
 
 def execute_test(project_dir, junit_report_path, html_report_path):
-    os.system('py.test {project_dir} '
+    os.system('py.test {project_dir} -o junit_family=xunit2 '
               '--junitxml="{junit_report_path}" '
               '--html="{html_report_path}"  '
               '--self-contained-html'.format(project_dir=project_dir,
@@ -52,7 +53,7 @@ def run_test():
     report_config.set_config()
 
     # 设置junit报告和html报告名字
-    random_report_name = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    random_report_name = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
     junit_xml_report_path = os.path.join(project_dir, report_config.report_folder,
                                          'junit_report-%s.xml' % random_report_name)
     html_report_path = os.path.join(project_dir, report_config.report_folder,
@@ -70,12 +71,17 @@ def run_test():
     subject = '{project_name} test report {random_report_name}'.format(project_name=project_name,
                                                                        random_report_name=random_report_name)
     email_content = gen_junit_report(junit_xml_report_path)
-    send_email(report_config.server,
-               report_config.email,
-               report_config.password,
-               report_config.to_list,
-               subject,
-               email_content,
-               html_report_path,
-               report_config.debug_level)
+    try:
+        send_email(report_config.server,
+                   report_config.email,
+                   report_config.password,
+                   report_config.to_list,
+                   subject,
+                   email_content,
+                   html_report_path,
+                   report_config.debug_level)
+    except smtplib.SMTPAuthenticationError:
+        echo(style('发送邮件失败，账户名或密码失败，请检查后重试', fg='red'))
+        return
+
     echo(style('邮件发送成功，请查收', fg='green'))

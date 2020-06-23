@@ -73,7 +73,7 @@ def init(ctx, project_name):
     生成接口测试项目
 
     使用方法:
-        $ walnuts init         # 生成接口测试项目
+        $ walnuts init
     """
     generate_project(project_name)
 
@@ -85,7 +85,7 @@ def run(ctx):
     运行测试
 
     使用方法:
-        $ walnuts run        # 运行测试
+        $ walnuts run
     """
     run_test()
 
