@@ -131,11 +131,11 @@ user:
 report:
   report_folder: report
   email:
-    email: hgbac@126.com
-    password: hgbac123abc
+    email: xxxx@126.com
+    password: xxxx
     to_list:
       - xxxx@.com
-      - hgbac@qq.com
+      - xxxx@qq.com
 ```
 
 ## 运行测试demo后端服务
