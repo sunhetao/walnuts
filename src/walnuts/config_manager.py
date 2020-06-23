@@ -1,20 +1,10 @@
 import os
-import sys
 from copy import deepcopy
 
-from .utils import get_root_dir_and_env, format_json, DDict, WDict, ConfigFileParser
+from .utils import get_root_dir, format_json, DDict, WDict, ConfigFileParser
 
 # 项目根目录标志文件名
 PROJECT_DIR_FLAG_FILE_NAME = '.walnuts'
-
-# 项目根路径和环境配置
-PROJECT_DIR, ENV = get_root_dir_and_env(PROJECT_DIR_FLAG_FILE_NAME, sys.path[0])
-
-if not PROJECT_DIR:
-    raise ValueError('找不到项目根目录，请在项目根目录下新建".walnuts"文件')
-
-# 默认使用环境变量里的配置
-ENV = os.getenv('env', None) or ENV
 
 # 配置文件名
 CONFIG_FILE_NAME = 'config'
@@ -26,14 +16,50 @@ class ConfigManager:
     ini_suffix = 'ini'
     json_suffix = 'json'
 
-    def __init__(self, project_dir, config_file_name, env):
-        self.project_dir = project_dir
+    def __init__(self, config_file_name):
+        self._project_dir = None
         self.config_file_name = config_file_name
-        self.env = env
-        self.config = self.get_finally_config()
+        self._env = None
+        self._config = None
+        self._wrapped_v = None
 
     def as_dict(self):
         return self.config
+
+    @property
+    def project_dir(self):
+        if not self._project_dir:
+            self._project_dir = get_root_dir(PROJECT_DIR_FLAG_FILE_NAME, os.getcwd())
+
+        return self._project_dir
+
+    @property
+    def env(self):
+        if not self._env:
+            with open(os.path.join(self.project_dir, PROJECT_DIR_FLAG_FILE_NAME), encoding='utf-8') as f:
+                env = f.read()
+            self._env = os.getenv('env', None) or env
+        return self._env
+
+    @property
+    def config(self):
+        if not self._config:
+            self._config = self.get_finally_config()
+        return self._config
+
+    @property
+    def wrapped_v(self):
+        if not self._wrapped_v:
+            # 拿到配置的copy,避免修改v
+            self._wrapped_v = deepcopy(self.config)
+
+            # wrapped_v包装后的dict是可以通过'.'来取值的
+            # d = {'a': {'b': {'c': 1}}}
+            # 通过包装后, '{a.b.c}'.format(a=wrapped_v(d['a'])) 可以格式化
+            for i in self._wrapped_v:
+                self._wrapped_v[i] = DDict(self._wrapped_v[i])
+
+        return self._wrapped_v
 
     def get_file_path(self, suffix, env):
         """
@@ -89,13 +115,4 @@ class ConfigManager:
 
 # 配置管理器，使用方式如下：
 # v['a']['b']['c'] 或者 v['a.b.c'] 再或者 v('a.b.c')
-v = ConfigManager(PROJECT_DIR, CONFIG_FILE_NAME, ENV)
-
-# 拿到配置的copy,避免修改v
-wrapped_v = deepcopy(v.as_dict())
-
-# wrapped_v包装后的dict是可以通过'.'来取值的
-# d = {'a': {'b': {'c': 1}}}
-# 通过包装后, '{a.b.c}'.format(a=wrapped_v(d['a'])) 可以格式化
-for i in wrapped_v:
-    wrapped_v[i] = DDict(wrapped_v[i])
+v = ConfigManager(CONFIG_FILE_NAME)

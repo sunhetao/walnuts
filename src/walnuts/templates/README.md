@@ -6,6 +6,7 @@
 ├── app_for_test.py         # 演示使用的web服务文件
 ├── config.yaml             # 配置文件
 ├── requirements.txt        # 项目依赖文件
+├── report                  # 测试报告存放文件夹
 ├── api                     # api定义包
 │   ├── __init__.py
 │   ├── demo.py

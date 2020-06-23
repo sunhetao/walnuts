@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 
 from requests import Session
 
-from .config_manager import wrapped_v
+from .config_manager import v
 from .utils import format_json
 
 
@@ -22,7 +22,7 @@ def request_mapping(path='', method=Method.GET):
             cls = cls_or_func
             obj = cls(*args, **kwargs)
             try:
-                obj.path = path.format(**wrapped_v)
+                obj.path = path.format(**v.wrapped_v)
             except KeyError as e:
                 raise ValueError('%s格式化时发生错误,找不到%s配置,请检查' % (path, e))
             obj.session = Session()

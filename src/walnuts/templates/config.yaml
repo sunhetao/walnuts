@@ -4,3 +4,12 @@ app:
 user:
   email: admin@admin.com
   password: 111111
+
+report:
+  report_folder: report
+  email:
+    email: xxxx@126.com
+    password: xxxxxx
+    to_list:
+      - xxxx@qq.com
+      - xxxx@163.com
