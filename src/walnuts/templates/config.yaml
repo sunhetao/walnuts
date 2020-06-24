@@ -2,7 +2,7 @@ app:
   host: http://127.0.0.1:5000
 
 user:
-  email: admin@admin.com
+  account: admin@admin.com
   password: 111111
 
 report:

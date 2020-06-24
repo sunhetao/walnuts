@@ -5,12 +5,12 @@ from walnuts import RequestMapping, Method, Requester
 class Demo:
 
     @RequestMapping(path='/login', method=Method.POST)
-    def login(self, email, password):
+    def login(self, account, password):
         """
         登录接口
         """
         data = {
-            'email': email,
+            'account': account,
             'password': password
         }
         return Requester(data=data)

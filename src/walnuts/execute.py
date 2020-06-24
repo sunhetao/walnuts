@@ -35,7 +35,7 @@ class ReportConfig:
 
 
 def execute_test(project_dir, junit_report_path, html_report_path):
-    os.system('py.test {project_dir} -o junit_family=xunit2 '
+    os.system('py.test "{project_dir}" -o junit_family=xunit2 '
               '--junitxml="{junit_report_path}" '
               '--html="{html_report_path}"  '
               '--self-contained-html'.format(project_dir=project_dir,

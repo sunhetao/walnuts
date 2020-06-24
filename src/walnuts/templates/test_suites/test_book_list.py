@@ -6,10 +6,10 @@ from common.assert_tools import if_list_equal
 class TestBookList:
 
     def setup(self):
-        email = v['user.email']
+        account = v['user.account']
         password = v['user.password']
         self.app = Demo()
-        self.app.login(email, password)
+        self.app.login(account, password)
 
     def test_get_book_list(self):
         res = self.app.get_book_list().json()

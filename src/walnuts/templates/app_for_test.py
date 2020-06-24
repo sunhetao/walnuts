@@ -14,32 +14,32 @@ class User(flask_login.UserMixin):
 
 
 @login_manager.user_loader
-def user_loader(email):
-    if email not in users:
+def user_loader(account):
+    if account not in users:
         return
     user = User()
-    user.id = email
+    user.id = account
     return user
 
 
 @login_manager.request_loader
 def request_loader(request):
-    email = request.form.get('email')
-    if email not in users:
+    account = request.form.get('account')
+    if account not in users:
         return
     user = User()
-    user.id = email
-    user.is_authenticated = request.form['password'] == users[email]['password']
+    user.id = account
+    user.is_authenticated = request.form['password'] == users[account]['password']
 
     return user
 
 
 @app.route('/login', methods=['POST'])
 def login():
-    email = flask.request.form['email']
-    if flask.request.form['password'] == users[email]['password']:
+    account = flask.request.form['account']
+    if users.get(account, None) and flask.request.form['password'] == users[account]['password']:
         user = User()
-        user.id = email
+        user.id = account
         flask_login.login_user(user)
         return flask.jsonify(code=10000, msg='login success', data=None)
 

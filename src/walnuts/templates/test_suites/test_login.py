@@ -7,10 +7,10 @@ class TestLogin:
         """
         测试登录成功场景
         """
-        email = v['user.email']
+        account = v['user.account']
         password = v['user.password']
         app = Demo()
-        res = app.login(email, password).json()
+        res = app.login(account, password).json()
         assert res['code'] == 10000
         assert res['msg'] == 'login success'
 
@@ -18,7 +18,7 @@ class TestLogin:
         """
         测试使用错误的密码登录
         """
-        email = v['user.email']
+        email = v['user.account']
         password = '123456'
         app = Demo()
         res = app.login(email, password).json()
