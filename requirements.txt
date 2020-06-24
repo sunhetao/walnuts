@@ -3,4 +3,3 @@ pyyaml
 configobj
 click
 jinja2
-lxml

@@ -125,7 +125,7 @@ app:
   host: http://127.0.0.1:5000
 
 user:
-  email: admin@admin.com
+  account: admin@admin.com
   password: 111111
 
 report:
@@ -274,7 +274,7 @@ app:
   host: http://127.0.0.1:5000
 
 user:
-  email: admin@admin.com
+  account: admin@admin.com
   password: 111111
 
 ```
@@ -283,7 +283,7 @@ user:
 ```python
 from walnuts import v
 
-email = v['user.email'] # 通过[]取值
+account = v['user.account'] # 通过[]取值
 password = v('user.password') # 通过()取值
 
 ```

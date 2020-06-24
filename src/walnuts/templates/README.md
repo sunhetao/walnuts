@@ -40,7 +40,7 @@ python app_for_test.py
 - login接口，post方法，表单方式提交数据，请求格式如下
 ```json
 {
-  "email": "xx@xx.com",
+  "account": "xx@xx.com",
   "password": "xxxxx"
 }
 ```
@@ -71,7 +71,7 @@ app:
   host: http://127.0.0.1:5000
 
 user:
-  email: admin@admin.com
+  account: admin@admin.com
   password: 111111
 
 ```
@@ -80,7 +80,7 @@ user:
 ```python
 from walnuts import v
 
-email = v['user.email'] # 通过[]取值
+account = v['user.account'] # 通过[]取值
 password = v('user.password') # 通过()取值
 
 ```
