@@ -1,10 +1,8 @@
-#!/usr/bin/python
-# coding=utf-8
 from setuptools import setup, find_packages
 
 setup(
     name="walnuts",
-    version="0.0.3",
+    version="0.0.4",
     keywords=("api test", "automation", "testing", "walnut"),
     description="api test tools",
     long_description="simplify api testing",

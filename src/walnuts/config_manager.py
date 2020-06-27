@@ -1,3 +1,4 @@
+import abc
 import os
 from copy import deepcopy
 
@@ -116,3 +117,52 @@ class ConfigManager:
 # 配置管理器，使用方式如下：
 # v['a']['b']['c'] 或者 v['a.b.c'] 再或者 v('a.b.c')
 v = ConfigManager(CONFIG_FILE_NAME)
+
+
+class ReportConfig(metaclass=abc.ABCMeta):
+
+    @abc.abstractmethod
+    def set_config(self):
+        pass
+
+    @abc.abstractmethod
+    def need_send_report(self):
+        pass
+
+
+class EmailReportConfig(ReportConfig):
+
+    def __init__(self):
+        self.server = None
+        self.email = None
+        self.password = None
+        self.to_list = None
+        # self.subject = None
+        self.debug_level = None
+        self.report_folder = None
+
+    def set_config(self):
+        self.server = v['report.email.server']
+        self.email = v['report.email.email']
+        self.password = v['report.email.password']
+        self.to_list = v['report.email.to_list']
+        self.debug_level = v['report.email.debug_level'] or 0
+        self.report_folder = v['report.report_folder'] or ''
+
+        if not self.server and self.email:
+            self.server = 'smtp.' + self.email.split('@')[-1]
+
+    def need_send_report(self):
+        return self.server and self.email and self.password and self.to_list
+
+
+class DingTalkReportConfig(ReportConfig):
+
+    def __init__(self):
+        self.hook_url = None
+
+    def set_config(self):
+        self.hook_url = v['report.dingtalk.hook_url']
+
+    def need_send_report(self):
+        return self.hook_url

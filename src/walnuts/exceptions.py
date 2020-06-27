@@ -1,0 +1,2 @@
+class SendDingTalkFailException(Exception):
+    pass

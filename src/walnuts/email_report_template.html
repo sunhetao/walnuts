@@ -5,75 +5,48 @@
     <title>Title</title>
 </head>
 <body style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">
-<!--<table style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--    <tr>-->
-<!--        <td align="right" style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--            <j:choose>-->
-<!--                <j:when test="${build.result=='SUCCESS'}">-->
-<!--                    <img src="${rooturl}static/e59dfe28/images/32x32/blue.gif">-->
-<!--                    </img>-->
-<!--                </j:when>-->
-<!--                <j:when test="${build.result=='FAILURE'}">-->
-<!--                    <img src="${rooturl}static/e59dfe28/images/32x32/red.gif">-->
-<!--                    </img>-->
-<!--                </j:when>-->
-<!--                <j:otherwise>-->
-<!--                    <img src="${rooturl}static/e59dfe28/images/32x32/yellow.gif">-->
-<!--                    </img>-->
-<!--                </j:otherwise>-->
-<!--            </j:choose>-->
-<!--        </td>-->
-<!--        <td valign="center" style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--            <b style="font-size: 200%;">-->
-<!--                TESTRUN ${build.result}-->
-<!--            </b>-->
-<!--        </td>-->
-<!--    </tr>-->
-<!--    <tr>-->
-<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--            Project:-->
-<!--        </td>-->
-<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--            ${project.name}-->
-<!--        </td>-->
-<!--    </tr>-->
-<!--    <tr>-->
-<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--            Date of run:-->
-<!--        </td>-->
-<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--            ${it.timestampString}-->
-<!--        </td>-->
-<!--    </tr>-->
-<!--    <tr>-->
-<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--            Test duration:-->
-<!--        </td>-->
-<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--            ${build.durationString}-->
-<!--        </td>-->
-<!--    </tr>-->
-<!--    <tr>-->
-<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--            Test report:-->
-<!--        </td>-->
-<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--            <a href="http://172.16.10.203:8080/jenkins/job/${project.name}/${build.number}/allure/">-->
-<!--                TestReport-->
-<!--            </a>-->
-<!--        </td>-->
-<!--    </tr>-->
-<!--    <tr>-->
-<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--            Console logs:-->
-<!--        </td>-->
-<!--        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
-<!--            <a href="${rooturl}${build.url}console">-->
-<!--                ${rooturl}${build.url}console-->
-<!--            </a>-->
-<!--        </td>-->
-<!--    </tr>-->
-<!--</table>-->
+<table style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">
+    <tr>
+        <td align="right" style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">
+            {% if test_result == 'SUCCESS' %}
+                <img src="data:image/gif;base64,R0lGODlhIAAgAPZ0ADRlpDdopjlppzxsqU5tml12mkNyrUl1rVR0olt6pV18qkd3sUt7tFJ+tGyBn12EtlSDuliHvVqJv2SDrnyRr2mHsWyKsmCHuGaLu2yPvXCNtHeSt3aSuXmVun6Zvl2MwWGPw2SSxWyUw2iWyG6bzHOVwHeYwn2cxXGfz3ieyXShz3ei0Hyl0IaTppSeq4KbvpagrqersaqvuLa4uru7u4SewYKgx4qjxIajyY2myY2oy5mqw5OszJmvzZ2wy4Cm0YSr0Ymu0o6x0pS105u005y71Ju726K0zrO8yaK91Ku70qi/26bB1KzF1a/I1qPA3azE27TC17PK1rnO17/L3b3R163G4brP47rQ48PDw8XGyMzMzMHT18TV2MrZ2NPT09He2dzc3NTg2dvl2uPp2+vu3PT13fj33cHS49DZ5tTc6Nzj7ePj4+Lm7ezs7OTp8Ovu9O/y9/X19fz8/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAUAAHQALAAAAAAgACAAAAf/gHSCg4SFhoeIiYqLjI2OgnNpPhYaHBU1VHGPhXM+HElWWFBPVlZENhWam28TUFdJSUVFQ0EsKj9LFVGPShxoTU1Swk1MRbUkI0M5FXOMazWvTlNVXVxTxENAKyMSIj0vi3MTV0VNU15iYmBd10VCLCQgECUdaoo3UEVJUl1iZP9i2DHJhkLeAh0Kmh1qU8PIECbnxpQ5U2aMlylQsqkYAYGBAR43EB1ZAuThlC4SzVS8OBAIihARFgw4oQCRBSsshBSRUkXMGDJjwHCRMvBHQQgLBFzQoLBQBSMsgpQ76QXMunbHPkAwEMBAjTWG5ngwCkRIEnNV0l5LonHEhwYG/wAAyKHE0JocI0awKFmECTBis7TFQzpArg5wnDikAEFir5AhsmZlgwciwla5AHTsMjQByAcQI1TsBRIkCBAWK5BZNiBA7oETbw5pINIgAmgSKkSvUIEMhATCmDFUQKSEh4EGED6HyDsChG8IwDHjqHkIzgQTBhgghyChu+WOBgpjNqDjSCIlOQ4MMLBggXYGDBaED4BZLo8JiybwoC9ggH//rdUnlyVwKDLHGhPoIJ6ADGZgww5yNMWJG2wggQAPDzBY30cWUBAGG25ICIkcboTxhRYFdIBDAwFidkAGPBAgwxZfsMFGhIaQyMYXW2QBAwEa1JBDDjXocMMGCThAQz8WW3zohhyIzEGhiT3O4IIDBBBQQAsxLEmjk1AmMoeUU35hJo80fhHGhyCO+ciYcpDoxpxuxBGhiJvkqWeegQAAOw==">
+                </img>
+            {% else %}
+                <img src="data:image/gif;base64,R0lGODlhIAAgAPZdAI46OpQ9Pe8pKfAvL/AzM/E8PJ1HR5JOTp1LS5VeXqVPT6JUVKlVVaVaWq1bW5x8fKxkZKRtbbNmZrtra7Jzc7tzc7V5efJDQ/NMTPNSUvRbW8Vzc8x5edV/f/VkZPZsbPdzc/d6evh+fqSNjaiPj72Ojq6kpLm1tbu7u8uBgdyFhd2MjMOWlsednduVldSZmeODg+mGhuOLi+2Li/ODg/iFhfaNjfmMjPCRkfmTk/qbm8igoMOsrM2qqt6kpNCsrNO2tuSiou2jo+epqfWmpvqkpPusrPazs/yysvK4uPy6usTDw8zMzN7JydPT09zc3OLOzv3Dw/7NzefW1unb2//Y2OPj4+zh4ezs7PPq6vX19fr39/z8/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAUAAF0ALAAAAAAgACAAAAf/gF2Cg4SFhoeIiYqLjI2OgltNJQ0OEAsWQFmPhVwlEC9DR0U6RkIuFQuam1cIPkY5OTY2NSEgHyFCCj+POxJJOsDAsDUitho2KQ1cjFMVSDk6RUbToznEHx4ZHisUi1wIRzbRSErlSqM2NCAeGhgeE1CKFkE2OdJKUVJRSkZF1sYYCtAwsOwQlQrW7JGTUkWKEiT+boT40O5CARkWELEIEqKGwnwNo0C0NrFdAQIgDCBqQAQEDWhG8O3jp+MfxYADNDgoWKhBDhAibkQzQo7fqBvFsgUUUIDDFENbJkwEUUNcEWlXa9KimOECAQECYLQwRCWFBw+3atyAJuzGNXYB/78KiNGNkwSKHkB0VHvDLa11GroSGAAWRo9DCmpk0IBWbwgRIWphC4wTbIENVw5BwHEBgza0H0JjY9e1AGGwOhG1WFGg82INjNlRtngarAiVh7Iw+FCgNQbPGX5jsHgSrGUVLBK1SHFhQO/eF6L3lmtcwAwEixDMIDxgAIHvg6sb/8BAFSIuVxTQoC5evAcOJbTwLLQFixUeAWRkaF+9wAwHETxhBRZaGMKFFvY5scQBE9CAQW2WeaACACYw4cSA8hmCoBVOKEhCAA5wEAMNIcTQwQQIJHDCEhZiiMiGTzDBxBInjJAAAAAc8IAJKLDohIAEKsLFFlpYYcUTMcqo5BiPQGqxxXzeEKkFglhUOeWTm2Sp5ZaDBAIAOw==">
+                </img>
+            {% endif %}
+        </td>
+        <td valign="center" style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">
+            <b style="font-size: 200%;">
+                TESTRUN {{ test_result }}
+            </b>
+        </td>
+    </tr>
+    <tr>
+        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">
+            项目名称:
+        </td>
+        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">
+            {{ project_name }}
+        </td>
+    </tr>
+    <tr>
+        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">
+            运行日期:
+        </td>
+        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">
+            {{ run_date }}
+        </td>
+    </tr>
+    <tr>
+        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">
+            运行耗时:
+        </td>
+        <td style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">
+            {{ run_duration_time + 's' }}
+        </td>
+    </tr>
+</table>
 <br/>
 
 <!--<div style="font-family: Verdana, Helvetica, sans serif; font-size: 11px; color: black">-->
@@ -115,42 +88,39 @@
             <th style="border: 1px solid black; border-collapse:collapse;">Skipped</th>
             <th style="border: 1px solid black; border-collapse:collapse;">Total</th>
         </tr>
-        {% for package_name, test_package in test_packages.items() %}
-        <tr>
-            <td style="border: 1px solid black; border-collapse:collapse;">
-                <tt>{{ package_name }}</tt>
-            </td>
-            <td style="border: 1px solid black;border-collapse:collapse; color:red;">
-                {{ test_package['failed'] }}
-            </td>
-            <td style="border: 1px solid black;border-collapse:collapse; color:blue;">
-                {{ test_package['success'] }}
-            </td>
-            <td style="border: 1px solid black;border-collapse:collapse; color:grey;">
-                {{ test_package['skipped'] }}
-            </td>
-            <td style="border: 1px solid black;border-collapse:collapse;">
-                <b>{{ test_package['failed'] + test_package['success'] + test_package['skipped'] }}</b>
-            </td>
-        </tr>
-        {% for test_case in test_package['test_cases'] %}
-        {%- if test_case['failed']>0 -%}
-        <tr>
-            <td style="color:red;" colspan="5">
-                <tt>{{ test_case['case'] }}</tt>
-            </td>
-        </tr>
-        {% endif %}
-        {% endfor %}
-        {% for test_case in test_package['test_cases'] %}
-        {%- if test_case['failed']==0 -%}
-        <tr>
-            <td style="color:green;" colspan="5">
-                <tt>{{ test_case['case'] }}</tt>
-            </td>
-        </tr>
-        {% endif %}
-        {% endfor %}
+        {% for module_name, test_module in test_modules.items() %}
+            <tr>
+                <td style="border: 1px solid black; border-collapse:collapse;">
+                    <tt>{{ module_name }}</tt>
+                </td>
+                <td style="border: 1px solid black;border-collapse:collapse; color:red;">
+                    {{ test_module['failed'] + test_module['error'] }}
+                </td>
+                <td style="border: 1px solid black;border-collapse:collapse; color:blue;">
+                    {{ test_module['success'] }}
+                </td>
+                <td style="border: 1px solid black;border-collapse:collapse; color:grey;">
+                    {{ test_module['skipped'] }}
+                </td>
+                <td style="border: 1px solid black;border-collapse:collapse;">
+                    <b>{{ test_module['failed'] + test_module['success'] + test_module['skipped'] }}</b>
+                </td>
+            </tr>
+            {% for test_case in test_module['test_cases'] %}
+                {%- if test_case['failed']>0 or test_case['error']>0 -%}
+                    <tr>
+                        <td style="color:red;" colspan="5">
+                            <tt>{{ test_case['case'] }}</tt>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td style="color:green;" colspan="5">
+                            <tt>{{ test_case['case'] }}</tt>
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
         {% endfor %}
     </table>
     <br/>
