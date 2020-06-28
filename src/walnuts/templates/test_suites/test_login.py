@@ -10,7 +10,7 @@ class TestLogin:
         account = v['user.account']
         password = v['user.password']
         app = Demo()
-        res = app.login(account, password).json()
+        res = app.login(account, password)._json()
         assert res['code'] == 10000
         assert res['msg'] == 'login success'
 
@@ -21,6 +21,6 @@ class TestLogin:
         email = v['user.account']
         password = '123456'
         app = Demo()
-        res = app.login(email, password).json()
+        res = app.login(email, password)._json()
         assert res['code'] == 20000
         assert res['msg'] == 'login fail, password error'
