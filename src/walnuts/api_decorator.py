@@ -1,15 +1,13 @@
-import builtins
 import inspect
-from collections import OrderedDict
+import json
+from collections import OrderedDict, defaultdict
 from functools import wraps
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlencode
 
-from requests import Session
+from requests import Session, Response
 
 from .config_manager import v
 from .utils import format_json
-
-hook_func_dict = dict()
 
 
 class Method:
@@ -56,6 +54,9 @@ def request_mapping(path='', method=Method.GET):
     return decorate
 
 
+# 回调函数字典
+hook_func_dict = defaultdict(list)
+
 # 请求前处理函数名称
 BEFORE_REQUEST_FUNC_NAME = 'before_request_func'
 
@@ -65,14 +66,15 @@ AFTER_RESPONSE_FUNC_NAME = 'after_response_func'
 
 def register_func(func_name, func: Method):
     """
-    注册函数，如果函数属于类，则添加到类变量中，否则则添加到全局变量中
+    注册函数，如果函数属于类，则添加到以类全路径为key的列表中
+    否则添加到以func_name为key的列表中
     """
     func_qualname_tuple = func.__qualname__.split('.')
     if len(func_qualname_tuple) > 1:
         func_key = '.'.join([func.__module__, func_qualname_tuple[0], func_name])
-        hook_func_dict[func_key] = func
+        hook_func_dict[func_key].append(func)
     else:
-        hook_func_dict[func_name] = func
+        hook_func_dict[func_name].append(func)
 
 
 def before_request(func):
@@ -91,19 +93,19 @@ def after_response(func):
     return func
 
 
-def get_class_registered_func(cls, func_name):
+def get_class_registered_funcs(cls, func_name):
     """
     获取注册在类上的回调函数
     """
     func_key = '.'.join([cls.__module__, cls.__class__.__name__, func_name])
-    return hook_func_dict.get(func_key, None)
+    return hook_func_dict[func_key]
 
 
-def get_global_registered_func(func_name):
+def get_global_registered_funcs(func_name):
     """
     获取全局注册的回调函数
     """
-    return hook_func_dict.get(func_name, None)
+    return hook_func_dict[func_name]
 
 
 def add_header(self, key, value):
@@ -124,7 +126,7 @@ def get_session(self) -> Session:
     return getattr(self, 'session', None)
 
 
-class RequestParams:
+class RequestObject:
     def __init__(self, method, url, params, headers, data, _json, others):
         self.method = method
         self.url = url
@@ -134,11 +136,23 @@ class RequestParams:
         self.json = _json
         self.others = others
 
+    def get_encoded_params(self):
+        return urlencode(self.params)
+
+    def get_encoded_data(self):
+        return urlencode(self.data)
+
+    def get_dumped_json(self):
+        return json.dumps(self.json)
+
     def __repr__(self):
         return format_json(self.__dict__)
 
     def __str__(self):
         return self.__repr__()
+
+
+ResponseObject = Response
 
 
 class Requester:
@@ -223,7 +237,7 @@ class Requester:
         self._json = self.fixation_order(self.kwargs.pop('json', {}))
 
     def __prepare_request_params(self):
-        self.request_params = RequestParams(
+        self.request_params = RequestObject(
             method=self.method,
             url=self.url,
             params=self.params,
@@ -243,17 +257,34 @@ class Requester:
         self.__prepare_request_params()
 
     def __process_before_request(self):
-        before_request_class_func = get_class_registered_func(self.api_obj, BEFORE_REQUEST_FUNC_NAME)
-        before_request_global_func = get_global_registered_func(BEFORE_REQUEST_FUNC_NAME)
+        """
+        执行已注册的请求前置函数
+        """
+        before_request_class_funcs = get_class_registered_funcs(self.api_obj, BEFORE_REQUEST_FUNC_NAME)
+        before_request_global_funcs = get_global_registered_funcs(BEFORE_REQUEST_FUNC_NAME)
 
         # 如果hook函数在类里，需要传入类实例
         # 传入的参数为RequestParams实例
-        if before_request_class_func:
-            before_request_class_func(self.api_obj, self.request_params)
-        elif before_request_global_func:
+        for before_request_global_func in before_request_global_funcs:
             before_request_global_func(self.request_params)
-        else:
-            pass
+
+        for before_request_class_func in before_request_class_funcs:
+            before_request_class_func(self.api_obj, self.request_params)
+
+    def __process_after_response(self):
+        """
+        执行已注册的响应后置函数
+        """
+        after_response_class_funcs = get_class_registered_funcs(self.api_obj, AFTER_RESPONSE_FUNC_NAME)
+        after_response_global_funcs = get_global_registered_funcs(AFTER_RESPONSE_FUNC_NAME)
+
+        # 如果hook函数在类里，需要传入类实例
+        # 传入的参数为RequestParams实例
+        for after_response_global_func in after_response_global_funcs:
+            after_response_global_func(self.res)
+
+        for after_response_class_func in after_response_class_funcs:
+            after_response_class_func(self.api_obj, self.res)
 
     def __process_log(self):
         print('\n******************************************************')
@@ -273,6 +304,7 @@ class Requester:
                                         params=self.params,
                                         **self.kwargs)
         self.__process_log()
+        self.__process_after_response()
 
     def __getattr__(self, item):
         return getattr(self.res, item)
