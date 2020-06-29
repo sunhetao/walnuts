@@ -64,7 +64,7 @@ BEFORE_REQUEST_FUNC_NAME = 'before_request_func'
 AFTER_RESPONSE_FUNC_NAME = 'after_response_func'
 
 
-def register_func(func_name, func: Method):
+def register_func(func_name, func):
     """
     注册函数，如果函数属于类，则添加到以类全路径为key的列表中
     否则添加到以func_name为key的列表中
