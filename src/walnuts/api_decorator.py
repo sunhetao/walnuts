@@ -2,11 +2,13 @@ import inspect
 import json
 from collections import OrderedDict, defaultdict
 from functools import wraps
+from types import FunctionType
 from urllib.parse import urljoin, urlencode
 
 from requests import Session, Response
 
 from .config_manager import v
+from .exceptions import ApiFunctionReturnValueError
 from .utils import format_json
 
 
@@ -17,7 +19,14 @@ class Method:
     DELETE = 'DELETE'
 
 
-def request_mapping(path='', method=Method.GET):
+def request_mapping(path='', method=Method.GET, before_request=None, after_response=None):
+    """
+    :param path: 请求路径
+    :param method: 请求方法，当该装饰器作用于类时，不需要传
+    :param after_response: 响应后回调函数，只能作用于方法
+    :param before_request: 请求前回调函数，只能作用于方法
+    """
+
     def decorate(cls_or_func):
         @wraps(cls_or_func)
         def wrapper_cls(*args, **kwargs):
@@ -33,16 +42,42 @@ def request_mapping(path='', method=Method.GET):
         @wraps(cls_or_func)
         def wrapper_func(*args, **kwargs):
             func = cls_or_func
-            requester = func(*args, **kwargs) or Requester()
+
+            # 如果函数返回是空，则默认赋值
+            func_res = func(*args, **kwargs)
+            if func_res is not None and not isinstance(func_res, Requester):
+                raise ApiFunctionReturnValueError('%s方法返回值错误，应为Requester对象或为None' % func.__name__)
+            requester = func_res or Requester()
             func_args = inspect.getfullargspec(func).args
+
+            # 判断该方法是不是在类里面，如果在类里，则将类中定义的path和session赋值给requester
             if len(func_args) > 0 and func_args[0] == 'self':
                 self = args[0]
                 requester.base_path = getattr(self, 'path', '')
                 requester.session = getattr(self, 'session', Session())
+
+                # 把类实例本赋值给requester的api_obj变量
                 requester.api_obj = self
+
+            # 如果before_request不为空，且为函数类型，则赋值给requester
+            if before_request is not None:
+                if isinstance(before_request, FunctionType):
+                    requester.before_request = before_request
+                else:
+                    raise ValueError('方法级别回调函数只能传入函数，不能传入实例方法或其它类型')
+
+            # 如果after_response不为空，且为函数类型，则赋值给requester
+            if after_response is not None:
+                if isinstance(after_response, FunctionType):
+                    requester.after_response = after_response
+                else:
+                    raise ValueError('方法级别回调函数只能传入函数，不能传入实例方法或其它类型')
+
             requester.func = func
             requester.path = path
             requester.method = method
+
+            # 执行请求
             requester.do()
             return requester
 
@@ -71,6 +106,7 @@ def register_func(func_name, func):
     """
     func_qualname_tuple = func.__qualname__.split('.')
     if len(func_qualname_tuple) > 1:
+        # 格式为 package.module.class.func_name
         func_key = '.'.join([func.__module__, func_qualname_tuple[0], func_name])
         hook_func_dict[func_key].append(func)
     else:
@@ -197,6 +233,12 @@ class Requester:
         # 请求参数对象
         self.request_params = None
 
+        # 请求前回调函数
+        self.before_request = None
+
+        # 响应后回调函数
+        self.after_response = None
+
         # 响应结果
         self.res = None
 
@@ -263,13 +305,17 @@ class Requester:
         before_request_class_funcs = get_class_registered_funcs(self.api_obj, BEFORE_REQUEST_FUNC_NAME)
         before_request_global_funcs = get_global_registered_funcs(BEFORE_REQUEST_FUNC_NAME)
 
-        # 如果hook函数在类里，需要传入类实例
-        # 传入的参数为RequestParams实例
+        # 按注册顺序执行全局级别回调函数
         for before_request_global_func in before_request_global_funcs:
             before_request_global_func(self.request_params)
 
+        # 按注册顺序执行类级别回调函数
         for before_request_class_func in before_request_class_funcs:
             before_request_class_func(self.api_obj, self.request_params)
+
+        # 执行函数级别回调函数
+        if self.before_request:
+            self.before_request(self.request_params)
 
     def __process_after_response(self):
         """
@@ -278,13 +324,17 @@ class Requester:
         after_response_class_funcs = get_class_registered_funcs(self.api_obj, AFTER_RESPONSE_FUNC_NAME)
         after_response_global_funcs = get_global_registered_funcs(AFTER_RESPONSE_FUNC_NAME)
 
-        # 如果hook函数在类里，需要传入类实例
-        # 传入的参数为RequestParams实例
+        # 按注册顺序执行全局级别回调函数
         for after_response_global_func in after_response_global_funcs:
             after_response_global_func(self.res)
 
+        # 按注册顺序执行类级别回调函数
         for after_response_class_func in after_response_class_funcs:
             after_response_class_func(self.api_obj, self.res)
+
+        # 执行函数级别回调函数
+        if self.after_response:
+            self.after_response(self.res)
 
     def __process_log(self):
         print('\n******************************************************')
