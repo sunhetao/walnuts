@@ -18,7 +18,9 @@ api测试工具集，宗旨是不造轮子，尽可能多的集成、组装轮�
 - [快速上手](#快速上手)
     - [生成测试项目](#生成测试项目)
     - [安装项目依赖](#安装项目依赖)
-    - [修改配置](#修改配置)
+    - [修改报告配置](#修改报告配置)
+        - [邮件报告](#邮件报告)
+        - [钉钉通知](#钉钉通知)
     - [运行测试demo后端服务](#运行测试demo后端服务)
     - [运行测试](#运行测试)
 - [使用说明](#使用说明)
@@ -132,7 +134,7 @@ You should consider upgrading via the 'python -m pip install --upgrade pip' comm
 ## 修改报告配置
 ### 邮件报告
 
-找到项目根目录下的``config.yaml``文件，修改里面的邮件相关配置，``report.email``下的``email``和``password``是你用来发送测试报告邮件的账号和密码，``to_list``是接收的邮件列表
+找到项目根目录下的``config.yaml``文件，修改里面的邮件相关配置，``report.email``下的``email``和``password``是你用来发送测试报告邮件的账号和密码，``to_list``是接收的邮件列表，具体配置可以参考下面的配置
 
 注意：需要开启**SMTP服务**，如果你开启了**授权权**的话，``password``需要填入授权码，而不是你的密码
 
@@ -140,12 +142,24 @@ You should consider upgrading via the 'python -m pip install --upgrade pip' comm
 
 ### 钉钉通知
 配置钉钉通知的方式如下
-1. 创建钉钉群，打开群助手
-    - ![N7H5N9.png](https://s1.ax1x.com/2020/07/01/N7H5N9.png)
-    - ![N7b1DU.png](https://s1.ax1x.com/2020/07/01/N7b1DU.png)
-    - ![N7O5qK.png](https://s1.ax1x.com/2020/07/01/N7O5qK.png)
-    - ![N7XFRs.png](https://s1.ax1x.com/2020/07/01/N7XFRs.png)
-2. sdf 
+
+1、打开要通知的钉钉群，打开群助手，点击添加机器人
+
+![N7H5N9.png](https://s1.ax1x.com/2020/07/01/N7H5N9.png)
+
+2、选择群机器人中的自定义
+
+![N7b1DU.png](https://s1.ax1x.com/2020/07/01/N7b1DU.png)
+
+3、输入机器人名字，勾选自定义关键词，关键词输入TEST（暂时只支持关键词配置），勾选协议，点击完成
+
+![N7O5qK.png](https://s1.ax1x.com/2020/07/01/N7O5qK.png)
+
+4、添加成功后，把webhook复制出来
+
+![N7XFRs.png](https://s1.ax1x.com/2020/07/01/N7XFRs.png)
+
+5、把webhook url配置到``report.dingtalk``下的``hook_url``处，如下面配置所示
 
 
 ```yaml
@@ -164,6 +178,8 @@ report:
     to_list:
       - xxxx@.com
       - xxxx@qq.com
+  dingtalk:
+    hook_url: https://oapi.dingtalk.com/robot/send?access_token=XXXX
 ```
 
 ## 运行测试demo后端服务
@@ -214,6 +230,10 @@ c:\users\administrator\appdata\local\programs\python\python38\lib\site-packages\
 测试报告如下图所示，使用的是``pytest-html``的报告
 
 ![avatar](https://s1.ax1x.com/2020/06/23/NaP0OS.png)
+
+钉钉通知如下图所示
+
+![NHedzt.png](https://s1.ax1x.com/2020/07/01/NHedzt.png)
 
 # 使用说明
 ## http请求
