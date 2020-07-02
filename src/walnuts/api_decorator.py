@@ -133,6 +133,8 @@ def get_class_registered_funcs(cls, func_name):
     """
     获取注册在类上的回调函数
     """
+    if not cls:
+        return []
     func_key = '.'.join([cls.__module__, cls.__class__.__name__, func_name])
     return hook_func_dict[func_key]
 

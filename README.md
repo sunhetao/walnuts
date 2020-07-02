@@ -24,8 +24,14 @@ api测试工具集，宗旨是不造轮子，尽可能多的集成、组装轮�
     - [运行测试demo后端服务](#运行测试demo后端服务)
     - [运行测试](#运行测试)
 - [使用说明](#使用说明)
-    - [http请求](#http请求)
+    - [预备学习](#预备学习)
+    - [API定义](#API定义)
+        - [与使用requests方式对比](#与使用requests方式对比)
+        - [一些请求示例](#一些请求示例)
+        - [请求前、响应后钩子](#请求前、响应后钩子)
     - [配置文件说明](#配置文件说明)
+    - [其它工具](#其它工具)
+        - [易用的日期类-HumanDatetime](#易用的日期类-HumanDatetime)
 - [TODO](#TODO)
 - [联系](#联系)
 
@@ -136,7 +142,7 @@ You should consider upgrading via the 'python -m pip install --upgrade pip' comm
 
 找到项目根目录下的``config.yaml``文件，修改里面的邮件相关配置，``report.email``下的``email``和``password``是你用来发送测试报告邮件的账号和密码，``to_list``是接收的邮件列表，具体配置可以参考下面的配置
 
-注意：需要开启**SMTP服务**，如果你开启了**授权权**的话，``password``需要填入授权码，而不是你的密码
+注意：需要开启**SMTP服务**，如果你开启了**授权码**的话，``password``需要填入授权码，而不是你的密码
 
 > 如果yaml配置不太熟的话，可以参考阮一峰大佬的这篇入门教程，http://www.ruanyifeng.com/blog/2016/07/yaml.html
 
@@ -223,27 +229,75 @@ c:\users\administrator\appdata\local\programs\python\python38\lib\site-packages\
 邮件发送成功，请查收
 
 ```
-邮件如下图所示（目前还比较简陋，后续会持续完善）
+### 邮件如下图所示（目前还比较简陋，后续会持续完善）
 
 ![avatar](https://s1.ax1x.com/2020/06/23/NaCIPI.png)
 
-测试报告如下图所示，使用的是``pytest-html``的报告
+### 测试报告如下图所示，使用的是``pytest-html``的报告
 
 ![avatar](https://s1.ax1x.com/2020/06/23/NaP0OS.png)
 
-钉钉通知如下图所示
+### 钉钉通知如下图所示
 
 ![NHedzt.png](https://s1.ax1x.com/2020/07/01/NHedzt.png)
 
 # 使用说明
-## http请求
-- 这里对``requests``库进行了封装，使其更容易使用类组织，并在调用过程中打印相关日志
-- 使用类组织时，该类下所定义的所有方法使用同一个``session``，这样就可以保存调用过程中设置的``cookie``，同时也可以通过``add_header``方法，给所有的请求添加请求头，可以很方便实现登录后设置``token``的功能
-- 除url和请求方法外，``requests``的其它方法均可传到``Requester``中，效果是一样的
+## 预备学习
+除了``python``之外，你还需要学习一下``requests``库和``pytest``的使用，我们的工具是基于这两个库的，相关资料如下 
 
-示例如下：
+- https://requests.readthedocs.io/zh_CN/latest/user/quickstart.html
+- https://docs.pytest.org/en/stable/
+
+## API定义
+- 这里对``requests``库进行了封装，使其更容易使用类组织HTTP请求，并在调用过程中打印相关日志
+- 使用类组织时，该类下所定义的所有方法使用同一个``session``，这样就可以保存调用过程中设置的``cookie``，同时也可以通过``add_header``方法，给所有的请求添加请求头，可以很方便实现登录后设置``token``的功能
+- 除url和请求方法已在``RequestMapping``装饰器中定义之外，使用``requests``时的其它参数均可传到``Requester``中，效果是一样的
+
+> 这里需要理解一下session的概念，https://requests.readthedocs.io/en/master/user/advanced/#session-objects
+
+### 与使用requests方式对比
+``requests``已经很简单，很好用的，为什么还要封装呢？
+
+``requests``的确非常好用，但它只是一个http请求库，如果用来做测试的话，势必要解决很多测试中遇到的问题，比如：
+
+- 需要在每次发请求都打印出相关报文，每个请求里都需要写一遍
+- 接口请求需要签名，每个请求里都需要单独写一遍
+- 需要对请求响应后的结果做下初步断言，同样也需要在每个请求里写一遍
+- ...
+
+所以我们还需要封装，加以改造一下，改造完可以实现如下功能
+
+- 集成打印报文功能
+- 增加多层级请求前响应后回调功能
+- 提取url和方法，使我们的api定义看起来更清晰
+- 简化使用，隐藏session，一般操作不需要接触session
+- 包装响应结果，使其更容易取值，如自动解析xml，自动集成json的objectpath取值功能 
+- ...
+
+下面是使用形式上的对比，具体功能我们后面再介绍
+
 ```python
-from walnuts import RequestMapping, add_header, Method, Requester
+import requests
+from walnuts import RequestMapping, Method, Requester
+
+# 使用requests
+url = 'http://www.baidu.com'
+params = {'a': 1, 'b': 2}
+headers = {'a': '1', 'b': '2'}
+data = {'a': 1, 'b': 2}
+res = requests.post(url, params=params, headers=headers, data=data)
+
+@RequestMapping(path='http://www.baidu.com', method=Method.POST)
+def post_baidu():
+    params = {'a': 1, 'b': 2}
+    headers = {'a': '1', 'b': '2'}
+    data = {'a': 1, 'b': 2}
+    return Requester(params=params, headers=headers, data=data)
+```
+
+### 一些请求示例
+```python
+from walnuts import RequestMapping, add_header, Method, Requester, add_headers, get_session
 
 
 @RequestMapping(path='http://httpbin.org')
@@ -251,17 +305,18 @@ class HTTPBin:
     """
     使用类组织http请求
     """
+
     @RequestMapping('/post', method=Method.POST)
     def post_form(self):
         """
-        form请求示例
+        form表单格式请求示例
         """
         return Requester(data={'a': 1, 'b': 2})
 
     @RequestMapping('/post', method=Method.POST)
     def post_json(self):
         """
-        json请求示例
+        json格式请求示例
         """
         return Requester(json={'a': 1, 'b': 2})
 
@@ -284,14 +339,28 @@ class HTTPBin:
         """
         请求组下面的其它站点
         """
-        pass
+        return Requester()
 
     def add_header_to_all(self):
         """
-        调用此方法后，以后所有的请求都会带上这个headers
+        调用此方法后，以后所有的请求都会带上{'walnuts': 'header'}这个header
         可以用此方法作登录后添加token的操作
         """
         add_header(self, 'walnuts', 'header')
+
+    def add_headers_to_all(self):
+        """
+        调用此方法后，以后所有的请求都会带上这个方法所添加的headers
+        """
+        headers = {'a': 'a', 'b': 'b', 'c': 'c'}
+        add_headers(self, headers)
+
+    def get_request_session(self):
+        """
+        获取session的方式
+        """
+        return get_session(self)
+
 
 @RequestMapping('http://httpbin.org/post', method=Method.POST)
 def post_json():
@@ -307,7 +376,151 @@ if __name__ == '__main__':
     http_bin.post_form().json()
     http_bin.post_json().json()
     http_bin.path_var().json()
+    post_json()
+
 ```
+
+### 请求前、响应后钩子
+我们有时需要在http请求前做一些事情，比如计算签名，或者在http响应后增加补步响应断言等，``walnuts``提供了``BeforeRuqest``和``AfterResponse``两个装饰器，可以协助完成这个工作
+
+这里提供3个级别，分别是``全局、类、方法``，模块加载完成后，会分别注册，当执行http请求里，会按照 ``全局 -> 类 -> 方法``的顺序依次执行，全局和类级别可定义多个回调函数，方法级别只能定义一个
+
+``talk is cheap, show me the code``
+
+
+
+```python
+from pprint import pprint
+
+from walnuts import RequestMapping, Requester, BeforeRequest, AfterResponse, Method, RequestObject, ResponseObject
+
+
+@BeforeRequest
+def global_hook_func1(request: RequestObject):
+    """
+    全局请求前回调函数1
+    :param request: 请求对象，后面的RequestObject用来辅助IDE提示功能，该参数在请求前会自动注入，无需要自己调用
+    """
+
+    # 请求前给headers添加值
+    request.headers['global_hook_func1'] = 'global_hook_func1'
+
+    # 查看request对象内容
+    pprint(request)
+
+    # 获取编码后的url query参数
+    print(request.get_encoded_params())
+
+    # 获取json字符串，直接通过request.json获取到的是字典
+    print(request.get_dumped_json())
+
+    # 获取编码后的data参数，即form表单形式提交时的body数据
+    print(request.get_encoded_data())
+
+
+@BeforeRequest
+def global_hook_func2(request: RequestObject):
+    """
+    全局请求前回调函数2
+    """
+    request.headers['global_hook_func2'] = 'global_hook_func2'
+
+
+@AfterResponse
+def global_response_hook_func(response: ResponseObject):
+    """
+    全局响应后回调函数
+    :param response:响应对象，同requests的响应对象
+    """
+    print('断言响应状态码是200\n')
+    assert response.status_code == 200
+
+
+def post1_before_func(request: RequestObject):
+    """
+    给HTTPBin1 post1方法使用的回调函数
+    """
+    request.headers['post1_before_func'] = 'post1_before_func'
+
+
+def post2_before_func(request: RequestObject):
+    """
+    给HTTPBin1 post2方法使用的回调函数
+    """
+    request.headers['post2_before_func'] = 'post2_before_func'
+
+
+@RequestMapping('http://httpbin.org/')
+class HTTPBin1:
+
+    @BeforeRequest
+    def class_hook_func(self, request: RequestObject):
+        """
+        类级别的请求前回调函数
+        """
+        request.headers['HTTPBin1_class_hook_func1'] = 'HTTPBin1_class_hook_func1'
+
+    @RequestMapping(path='/post', method=Method.POST, before_request=post1_before_func)
+    def post_1(self):
+        """
+        HTTPBin1 post_1
+        """
+        return Requester()
+
+    @RequestMapping(path='/post', method=Method.POST, before_request=post2_before_func)
+    def post_2(self):
+        """
+        HTTPBin1 post_2
+        """
+        return Requester()
+
+
+@RequestMapping('http://httpbin.org/')
+class HTTPBin2:
+
+    @BeforeRequest
+    def class_hook_func(self, request: RequestObject):
+        """
+        类级别的请求前回调函数
+        """
+        request.headers['HTTPBin2_class_hook_func1'] = 'HTTPBin2_class_hook_func1'
+
+    @RequestMapping(path='/post', method=Method.POST)
+    def post(self):
+        """
+        HTTPBin2 post
+        """
+        return Requester()
+
+
+if __name__ == '__main__':
+    HTTPBin1().post_1()
+    HTTPBin1().post_2()
+    HTTPBin2().post()
+
+```
+
+在如上示例中，HTTPBin1的post_1请求，会添加如下header
+- ``global_hook_func1: global_hook_func1`` 全局级别
+- ``global_hook_func2: global_hook_func2`` 全局级别
+- ``HTTPBin1_class_hook_func1: HTTPBin1_class_hook_func1`` HTTPBin1类级别
+- ``post1_before_func： post1_before_func HTTPBin`` post_1方法级别
+
+HTTPBin1的post_2请求，会添加如下header
+- ``global_hook_func1: global_hook_func1`` 全局级别
+- ``global_hook_func2: global_hook_func2`` 全局级别
+- ``HTTPBin1_class_hook_func1: HTTPBin1_class_hook_func1`` HTTPBin1类级别
+- ``post2_before_func： post2_before_func HTTPBin`` post_2方法级别
+
+HTTPBin2的post请求，会添加如下header
+- ``global_hook_func1: global_hook_func1`` 全局级别
+- ``global_hook_func2: global_hook_func2`` 全局级别
+- ``HTTPBin2_class_hook_func1: HTTPBin2_class_hook_func1`` HTTPBin1类级别
+
+同时，所以请求都会执行``global_response_hook_func``函数里定义的断方
+
+> 需要注意的是，当同一级别有多个回调函数时，执行是按照加载的顺序，所以同一级别多个回调函数之前不要有关联，加载顺序有时并不是你看的的那样
+
 
 ## 配置文件说明
 配置文件名约定为``config``，可以使用``ini``、``json``、``yaml``，优先级为：``yaml > json > ini``
@@ -331,8 +544,79 @@ user:
 ```python
 from walnuts import v
 
-account = v['user.account'] # 通过[]取值
-password = v('user.password') # 通过()取值
+host =v['app']['host'] # 通过字典方式取值
+account = v['user.account'] # 通过[x.x]方式取值
+password = v('user.password') # 通过(x.x)方式取值
+
+```
+
+## 其它工具
+这里主要提供一些在测试中常用到的一些数据处理工具，不断完善中，欢迎提需求^_^
+
+### 易用的日期类-HumanDatetime
+
+```python
+import time
+from datetime import datetime, date
+
+from walnuts import HumanDateTime
+
+# 解析时间戳
+print(repr(HumanDateTime(1490842267)))
+print(HumanDateTime(1490842267000))
+print(HumanDateTime(1490842267.11111))
+print(HumanDateTime(1490842267111.01))
+
+# 解析字符串格式日期
+print(HumanDateTime('2017-02-02'))
+print(HumanDateTime('Thu Mar 30 14:21:20 2017'))
+print(HumanDateTime(time.ctime()))
+print(HumanDateTime('2017-3-3'))
+print(HumanDateTime('3/3/2016'))
+print(HumanDateTime('2017-02-02 00:00:00'))
+
+# 解析datetime或date类型时间
+print(HumanDateTime(datetime(year=2018, month=11, day=30, hour=11)))
+print(HumanDateTime(date(year=2018, month=11, day=30)))
+
+# 增加减少时间
+print(HumanDateTime('2017-02-02').add_day(1))
+print(HumanDateTime('2017-02-02').sub_day(1))
+print(HumanDateTime('2017-02-02').add_hour(1))
+print(HumanDateTime('2017-02-02').sub_hour(1))
+print(HumanDateTime('2017-02-02').add(days=1, hours=1, weeks=1, minutes=1, seconds=6))
+print(HumanDateTime('2017-02-02').sub(days=1, hours=1, weeks=1, minutes=1, seconds=6))
+
+# 转换为时间戳
+print(HumanDateTime(1490842267.11111).timestamp_second)
+print(HumanDateTime(1490842267.11111).timestamp_microsecond)
+print(HumanDateTime('2017-02-02 12:12:12.1111').add_day(1).timestamp_microsecond)
+print(HumanDateTime('2017-02-02 12:12:12 1111').add_day(1).timestamp_microsecond)
+
+# 比较大小
+print(HumanDateTime('2017-02-02 12:12:12 1111') < HumanDateTime('2017-02-02 12:12:11 1111'))
+print(HumanDateTime('2017-02-02 12:12:12 1111') < HumanDateTime('2017-02-02 12:13:11 1111'))
+print(HumanDateTime('2017-02-02 12:12:12 1111') < '2017-02-02 12:11:11')
+print(HumanDateTime('2017-02-02 12:12:12 1111') < '2017-02-02 12:13:11 1111')
+print(HumanDateTime('2017-02-02 12:12:12 1111') == '2017-02-02 12:13:11 1111')
+print(HumanDateTime('2017-02-02 12:12:12 1111') == '2017-02-02 12:13:12 1111')
+print(HumanDateTime('2017-02-02 12:12:12 1111') <= '2017-02-02 12:13:11 1111')
+print(HumanDateTime('2017-02-02 12:12:12 1111') >= '2017-02-02 12:13:11 1111')
+print(HumanDateTime('2017-02-02 12:12:12 1111') != time.time())
+print(HumanDateTime('2017-02-02 12:12:12 1111') <= time.time())
+print(HumanDateTime('2017-02-02 12:12:12 1111') >= time.time())
+
+# 约等于或者接近
+print(HumanDateTime('2017-02-02 12:12:12 1111').approach('2017-02-02 12:12:11 1111'))
+print(HumanDateTime('2017-02-02 12:12:12 1111').approach('2017-02-02 12:12:10 1111'))
+print(HumanDateTime('2017-02-02 12:12:12 1111').approach('2017-02-02 12:12:10 1111', offset=2))
+print(HumanDateTime('2017-02-02 12:12:12 1111').approach('2017-02-02 12:12:14 1111', offset=2))
+
+# 调用datetime的方法和属性
+print(HumanDateTime('2017-02-02 12:12:12 1111').day)
+print(HumanDateTime('2017-02-02 12:12:12 1111').year)
+print(HumanDateTime('2017-02-02 12:12:12 1111').second)
+print(HumanDateTime('2017-02-02 12:12:12 1111').date())
 
 ```
 
