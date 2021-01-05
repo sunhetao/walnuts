@@ -12,5 +12,5 @@ class TestBookList:
         self.app.login(account, password)
 
     def test_get_book_list(self):
-        res = self.app.get_book_list()._json()
+        res = self.app.get_book_list().json()
         assert if_list_equal(['python', 'java', 'javascript', 'go'], res['data'])

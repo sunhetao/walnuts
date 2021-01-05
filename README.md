@@ -179,12 +179,14 @@ user:
 report:
   report_folder: report
   email:
+    trigger: fail # 只在失败时发送
     email: xxxx@126.com
     password: xxxx
     to_list:
       - xxxx@.com
       - xxxx@qq.com
   dingtalk:
+    trigger: fail # 只在失败时发送
     hook_url: https://oapi.dingtalk.com/robot/send?access_token=XXXX
 ```
 
