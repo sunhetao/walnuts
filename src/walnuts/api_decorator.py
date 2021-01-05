@@ -261,6 +261,8 @@ class Requester:
         if self.path.startswith('http'):
             self.url = self.path
         else:
+            if not self.base_path.endswith('/'):
+                self.base_path = self.base_path + '/'
             self.url = urljoin(self.base_path, self.path)
 
         pv = self.kwargs.pop('path_var', {})

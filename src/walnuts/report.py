@@ -209,8 +209,8 @@ class Report:
         report_config.set_config()
 
         # 判断是否发送邮件
-        if not report_config.need_send_report():
-            echo(style('不发送邮件，没有找到邮件配置或配置有错误', fg='red'))
+        if not report_config.need_send_report(self.test_result['test_result']):
+            echo(style('不发送邮件，配置不触发或配置有错误', fg='red'))
             return self
 
         # 发送邮件
@@ -239,8 +239,8 @@ class Report:
         report_config.set_config()
 
         # 判断是否发送钉钉报告
-        if not report_config.need_send_report():
-            echo(style('不发送钉钉报告，没有找到钉钉配置', fg='red'))
+        if not report_config.need_send_report(self.test_result['test_result']):
+            echo(style('不发送钉钉报告，配置不触发或没有找到钉钉配置', fg='red'))
             return self
         try:
             send_ding_talk_msg(report_config.hook_url, self.project_name, self.test_result)

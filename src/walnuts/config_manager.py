@@ -126,13 +126,14 @@ class ReportConfig(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def need_send_report(self):
+    def need_send_report(self, *args):
         pass
 
 
 class EmailReportConfig(ReportConfig):
 
     def __init__(self):
+        self.trigger = None
         self.server = None
         self.email = None
         self.password = None
@@ -142,6 +143,7 @@ class EmailReportConfig(ReportConfig):
         self.report_folder = None
 
     def set_config(self):
+        self.trigger = v['report.email.trigger']
         self.server = v['report.email.server']
         self.email = v['report.email.email']
         self.password = v['report.email.password']
@@ -152,17 +154,23 @@ class EmailReportConfig(ReportConfig):
         if not self.server and self.email:
             self.server = 'smtp.' + self.email.split('@')[-1]
 
-    def need_send_report(self):
+    def need_send_report(self, test_result):
+        if self.trigger == 'fail' and test_result != 'FAILURE':
+            return False
         return self.server and self.email and self.password and self.to_list
 
 
 class DingTalkReportConfig(ReportConfig):
 
     def __init__(self):
+        self.trigger = None
         self.hook_url = None
 
     def set_config(self):
+        self.trigger = v['report.dingtalk.trigger']
         self.hook_url = v['report.dingtalk.hook_url']
 
-    def need_send_report(self):
+    def need_send_report(self, test_result):
+        if self.trigger == 'fail' and test_result != 'FAILURE':
+            return False
         return self.hook_url
