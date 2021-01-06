@@ -45,7 +45,7 @@ def send_email(server, email, password, to_list, subject, content, attach_path, 
             encoders.encode_base64(mime)
             msg.attach(mime)
 
-    server = smtplib.SMTP(server, 25)
+    server = smtplib.SMTP_SSL(server, 465)
     server.set_debuglevel(debug_level)
     server.login(email, password)
     server.sendmail(email, to_list, msg.as_string())
