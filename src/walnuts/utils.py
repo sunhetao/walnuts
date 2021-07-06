@@ -13,7 +13,7 @@ def format_json(content):
     if isinstance(content, (str, bytes)):
         try:
             content = json.loads(content)
-        finally:
+        except:
             return content
 
     result = json.dumps(content, sort_keys=True, indent=4, separators=(',', ': ')). \
@@ -72,6 +72,21 @@ class DDict:
 
     def __str__(self):
         return str(self.__d)
+
+
+def merge_dict(d1: dict, d2: dict):
+    """
+    merge d2 to d1
+    d2有d1没有，则新增
+    d1、d2同时有，但不全是字典，则替换
+    d1、d2同时有，但都是字典，则递归调用合并函数
+    """
+    for k in d2:
+        if k in d1:
+            if isinstance(d1[k], dict) and isinstance(d2[k], dict):
+                merge_dict(d1[k], d2[k])
+                continue
+        d1[k] = d2[k]
 
 
 class ConfigFileParser:

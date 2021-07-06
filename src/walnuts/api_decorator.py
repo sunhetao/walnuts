@@ -36,7 +36,10 @@ def request_mapping(path='', method=Method.GET, before_request=None, after_respo
                 obj.path = path.format(**v.wrapped_v)
             except KeyError as e:
                 raise ValueError('%s格式化时发生错误,找不到%s配置,请检查' % (path, e))
-            obj.session = Session()
+            session = Session()
+            if isinstance(obj.headers, dict):
+                session.headers.update(obj.headers)
+            obj.session = session
             return obj
 
         @wraps(cls_or_func)
@@ -165,12 +168,13 @@ def get_session(self) -> Session:
 
 
 class RequestObject:
-    def __init__(self, method, url, params, headers, data, _json, others):
+    def __init__(self, method, url, params, headers, data, files, _json, others):
         self.method = method
         self.url = url
         self.params = params
         self.headers = headers
         self.data = data
+        self.files = files
         self.json = _json
         self.others = others
 
@@ -229,6 +233,9 @@ class Requester:
         # form表单请求参数，格式为字典
         self.data = None
 
+        # multipart/form-data 请求参数，格式为字典
+        self.files = None
+
         # json请求参数，格式为字典
         self._json = None
 
@@ -272,12 +279,15 @@ class Requester:
         self.params = self.fixation_order(self.kwargs.pop('params', {}))
 
     def __prepare_headers(self):
-        self.headers = self.kwargs.pop('headers', {})
-        self.headers.update(self.session.headers)
+        self.headers = self.session.headers
+        self.headers.update(self.kwargs.pop('headers', {}))
         self.headers = self.fixation_order(self.headers)
 
     def __prepare_data(self):
         self.data = self.fixation_order(self.kwargs.pop('data', {}))
+
+    def __prepare_files(self):
+        self.files = self.fixation_order(self.kwargs.pop('files', {}))
 
     def __prepare_json(self):
         self._json = self.fixation_order(self.kwargs.pop('json', {}))
@@ -289,6 +299,7 @@ class Requester:
             params=self.params,
             headers=self.headers,
             data=self.data,
+            files=self.files,
             _json=self._json,
             others=self.kwargs
         )
@@ -299,6 +310,7 @@ class Requester:
         self.__prepare_params()
         self.__prepare_headers()
         self.__prepare_data()
+        self.__prepare_files()
         self.__prepare_json()
         self.__prepare_request_params()
 
@@ -342,7 +354,7 @@ class Requester:
 
     def __process_log(self):
         print('\n******************************************************')
-        print('1、请求url:\n%s\n' % self.res.request.url)
+        print('1、请求url:\n%s %s\n' % (self.method, self.res.request.url))
         print('2、api描述:\n%s\n' % (self.func.__doc__ or self.func.__name__).strip())
         print('3、请求headers:\n%s\n' % format_json(dict(self.res.request.headers)))
         print('4、请求body:\n%s\n' % format_json(self.res.request.body))
@@ -353,12 +365,14 @@ class Requester:
         self.__process_before_request()
         self.res = self.session.request(self.method, self.url,
                                         data=self.data,
+                                        files=self.files,
                                         headers=self.headers,
                                         json=self._json,
                                         params=self.params,
                                         **self.kwargs)
-        self.__process_log()
+
         self.__process_after_response()
+        self.__process_log()
 
     def __getattr__(self, item):
         return getattr(self.res, item)

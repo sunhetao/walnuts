@@ -2,7 +2,7 @@ import abc
 import os
 from copy import deepcopy
 
-from .utils import get_root_dir, format_json, DDict, WDict, ConfigFileParser
+from .utils import get_root_dir, format_json, DDict, WDict, ConfigFileParser, merge_dict
 
 # 项目根目录标志文件名
 PROJECT_DIR_FLAG_FILE_NAME = '.walnuts'
@@ -91,7 +91,7 @@ class ConfigManager:
 
         for env in (self.default_flag, self.env):
             for suffix in (self.ini_suffix, self.json_suffix, self.yaml_suffix):
-                config.update(self.get_config_by_suffix_and_env(suffix, env))
+                merge_dict(config, self.get_config_by_suffix_and_env(suffix, env))
 
         return config
 
