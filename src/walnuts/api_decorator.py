@@ -37,7 +37,7 @@ def request_mapping(path='', method=Method.GET, before_request=None, after_respo
             except KeyError as e:
                 raise ValueError('%s格式化时发生错误,找不到%s配置,请检查' % (path, e))
             session = Session()
-            if isinstance(obj.headers, dict):
+            if isinstance(getattr(obj, 'headers', None), dict):
                 session.headers.update(obj.headers)
             obj.session = session
             return obj
@@ -77,7 +77,10 @@ def request_mapping(path='', method=Method.GET, before_request=None, after_respo
                     raise ValueError('方法级别回调函数只能传入函数，不能传入实例方法或其它类型')
 
             requester.func = func
-            requester.path = path
+            try:
+                requester.path = path.format(**v.wrapped_v)
+            except:
+                requester.path = path
             requester.method = method
 
             # 执行请求
