@@ -142,6 +142,8 @@ You should consider upgrading via the 'python -m pip install --upgrade pip' comm
 
 找到项目根目录下的``config.yaml``文件，修改里面的邮件相关配置，``report.email``下的``email``和``password``是你用来发送测试报告邮件的账号和密码，``to_list``是接收的邮件列表，具体配置可以参考下面的配置
 
+默认是不需要配置 ``port``的，但如果邮件服务器的端口号比较特殊，也可以配置，配置方法同服务器地址
+
 注意：需要开启**SMTP服务**，如果你开启了**授权码**的话，``password``需要填入授权码，而不是你的密码
 
 > 如果yaml配置不太熟的话，可以参考阮一峰大佬的这篇入门教程，http://www.ruanyifeng.com/blog/2016/07/yaml.html
@@ -527,7 +529,9 @@ HTTPBin2的post请求，会添加如下header
 ## 配置文件说明
 配置文件名约定为``config``，可以使用``ini``、``json``、``yaml``，优先级为：``yaml > json > ini``
 
-如果是多环境的话，可以在后面加上环境名，如``config-test.yaml``，需要有``.walnuts``中写入test标识，测试环境的配置大于默认配置，如有同名参数，测试环境配置会覆盖默认环境配置
+如果是多环境的话，可以在后面加上环境名，如``config-test.yaml``，需要有``.walnuts``中写入test标识，测试环境的配置大于默认配置，如有同名参数，测试环境配置会覆盖默认环境配置，但如果同名的为map，则为智能合并
+
+默认配置文件全部在项目根目录下，但如果配置文件较多的情况下，也可放置于系统根目录的 ``config``目录下
 
 所有配置加载完之后会放到变量``v``里，可以通过``[]``或``()``取值，如下示例：
 

@@ -64,14 +64,20 @@ class ConfigManager:
 
     def get_file_path(self, suffix, env):
         """
-        根据文件后缀和环境获取配置文件完整路径
+        根据文件后缀和环境获取配置文件完整路径，先找根目录，找不到去config目录下找
         """
-        file_list = [f.lower() for f in os.listdir(self.project_dir)]
         if env == self.default_flag:
             file_name = '%s.%s' % (self.config_file_name, suffix)
         else:
             file_name = '%s-%s.%s' % (self.config_file_name, env, suffix)
-        return os.path.join(self.project_dir, file_name) if file_name in file_list else None
+
+        config_path1 = os.path.join(self.project_dir, file_name)
+        if os.path.exists(config_path1):
+            return config_path1
+
+        config_path2 = os.path.join(self.project_dir, 'config', file_name)
+        if os.path.exists(config_path2):
+            return config_path2
 
     def get_config_by_suffix_and_env(self, suffix, env):
         """
@@ -135,6 +141,7 @@ class EmailReportConfig(ReportConfig):
     def __init__(self):
         self.trigger = None
         self.server = None
+        self.port = None
         self.email = None
         self.password = None
         self.to_list = None
@@ -145,6 +152,7 @@ class EmailReportConfig(ReportConfig):
     def set_config(self):
         self.trigger = v['report.email.trigger']
         self.server = v['report.email.server']
+        self.port = v['report.email.port'] or 465
         self.email = v['report.email.email']
         self.password = v['report.email.password']
         self.to_list = v['report.email.to_list']

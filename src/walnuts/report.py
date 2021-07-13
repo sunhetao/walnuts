@@ -16,10 +16,11 @@ from .exceptions import SendDingTalkFailException
 from .config_manager import v, EmailReportConfig, DingTalkReportConfig
 
 
-def send_email(server, email, password, to_list, subject, content, attach_path, debug_level=0):
+def send_email(server, port, email, password, to_list, subject, content, attach_path, debug_level=0):
     """
     发送邮件
     :param server:邮件服务器
+    :param port:端口号
     :param email: 发送者邮件地址
     :param password: 邮箱密码
     :param to_list: 发送地址列表
@@ -45,7 +46,7 @@ def send_email(server, email, password, to_list, subject, content, attach_path, 
             encoders.encode_base64(mime)
             msg.attach(mime)
 
-    server = smtplib.SMTP_SSL(server, 465)
+    server = smtplib.SMTP_SSL(server, port)
     server.set_debuglevel(debug_level)
     server.login(email, password)
     server.sendmail(email, to_list, msg.as_string())
@@ -219,6 +220,7 @@ class Report:
         email_content = gen_email_report(self.project_name, self.test_result)
         try:
             send_email(report_config.server,
+                       report_config.port,
                        report_config.email,
                        report_config.password,
                        report_config.to_list,
